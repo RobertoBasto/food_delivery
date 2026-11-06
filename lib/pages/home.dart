@@ -70,7 +70,7 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // MÉTODO PARA CREAR CATEGORÍAS (Evita repetir código 4 veces)
+  // MÉTODO PARA CREAR CATEGORÍAS
   Widget _buildCategoriaItem(String idCategoria, String imagePath) {
     bool isSelected = categoriaSeleccionada == idCategoria;
 
