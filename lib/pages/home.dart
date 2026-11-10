@@ -1,6 +1,6 @@
-// Archivo: lib/pages/home.dart
 import 'package:flutter/material.dart';
 import '../widgets/widget_support.dart';
+import 'details.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -10,7 +10,6 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  // SOLUCIÓN MODERNA: Una sola variable para controlar el estado
   String categoriaSeleccionada = "";
 
   @override
@@ -100,25 +99,31 @@ class _HomeState extends State<Home> {
     );
   }
 
-  // MÉTODO PARA CREAR TARJETAS DE PRODUCTOS
+  // MÉTODO PARA CREAR TARJETAS DE PRODUCTOS (2. ACTUALIZADO CON NAVEGACIÓN)
   Widget _buildProductoCard(String titulo, String subtitulo, String precio, String imagePath) {
-    return Container(
-      margin: const EdgeInsets.only(right: 20.0, bottom: 5.0),
-      child: Material(
-        elevation: 5.0,
-        borderRadius: BorderRadius.circular(20),
-        child: Container(
-          padding: const EdgeInsets.all(14),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Image.asset(imagePath, height: 150, width: 150, fit: BoxFit.cover),
-              Text(titulo, style: AppWidget.semiBoldTextFieldStyle()),
-              const SizedBox(height: 5.0),
-              Text(subtitulo, style: AppWidget.lightTextFieldStyle()),
-              const SizedBox(height: 5.0),
-              Text(precio, style: AppWidget.semiBoldTextFieldStyle()),
-            ],
+    return GestureDetector(
+      onTap: () {
+        // Navega a la pantalla Details cuando tocan la tarjeta
+        Navigator.push(context, MaterialPageRoute(builder: (context) => const Details()));
+      },
+      child: Container(
+        margin: const EdgeInsets.only(right: 20.0, bottom: 5.0),
+        child: Material(
+          elevation: 5.0,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Image.asset(imagePath, height: 150, width: 150, fit: BoxFit.cover),
+                Text(titulo, style: AppWidget.semiBoldTextFieldStyle()),
+                const SizedBox(height: 5.0),
+                Text(subtitulo, style: AppWidget.lightTextFieldStyle()),
+                const SizedBox(height: 5.0),
+                Text(precio, style: AppWidget.semiBoldTextFieldStyle()),
+              ],
+            ),
           ),
         ),
       ),
