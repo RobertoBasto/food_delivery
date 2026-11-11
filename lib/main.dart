@@ -1,6 +1,6 @@
 // Archivo: lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:app_inventario_comida/pages/bottomnav.dart';
+import 'package:app_inventario_comida/pages/onboard.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const BottomNav(), // Aquí llamamos a tu pantalla
+      home: const Onboard(), // Aquí llamamos a tu pantalla
     );
   }
 }
