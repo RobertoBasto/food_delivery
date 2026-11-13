@@ -1,8 +1,13 @@
-// Archivo: lib/main.dart
 import 'package:flutter/material.dart';
-import 'package:app_inventario_comida/pages/onboard.dart';
+import 'package:flutter/gestures.dart'; 
+import 'package:firebase_core/firebase_core.dart';
+import '/pages/onboard.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  // Asegura que los widgets estén listos antes de iniciar Firebase
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 
@@ -14,11 +19,14 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Food App',
       debugShowCheckedModeBanner: false,
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: { PointerDeviceKind.mouse, PointerDeviceKind.touch },
+      ),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const Onboard(), // Aquí llamamos a tu pantalla
+      home: const Onboard(), 
     );
   }
 }
