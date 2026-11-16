@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../widgets/widget_support.dart';
+import '../service/shared_pref.dart';
 import 'login.dart';
 import 'bottomnav.dart';
 
@@ -29,7 +30,7 @@ class _SignUpState extends State<SignUp> {
         UserCredential userCredential = await FirebaseAuth.instance
             .createUserWithEmailAndPassword(email: email, password: password);
             
-        // 2. Guarda los datos en Firestore Database
+        // 2. Guarda los datos en Firestore Database (¡AHORA INCLUYE WALLET!)
         await FirebaseFirestore.instance
             .collection("users")
             .doc(userCredential.user!.uid)
@@ -37,7 +38,12 @@ class _SignUpState extends State<SignUp> {
           "Name": namecontroller.text,
           "Email": mailcontroller.text,
           "Id": userCredential.user!.uid,
+          "Wallet": "0", // Añadimos la billetera inicializada en cero
         });
+
+        // 3. ¡LA MAGIA DE LA MEMORIA LOCAL! Guardamos todo en el teléfono
+        await SharedPreferenceHelper().saveUserId(userCredential.user!.uid);
+        await SharedPreferenceHelper().saveUserWallet("0");
             
         // Validamos que la pantalla siga activa antes de usar 'context'
         if (!mounted) return; 

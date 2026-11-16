@@ -2,7 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'forgot_password.dart';
 import 'signup.dart';
-import 'home.dart';
+import 'bottomnav.dart';
+import '../service/shared_pref.dart';
 
 class LogIn extends StatefulWidget {
   const LogIn({super.key});
@@ -20,13 +21,16 @@ class _LogInState extends State<LogIn> {
 
   Future<void> userLogin() async {
     try {
-      await FirebaseAuth.instance
+      UserCredential userCredential = await FirebaseAuth.instance
           .signInWithEmailAndPassword(email: email, password: password);
       
-      // Verificamos si la pantalla sigue activa antes de usar el context
+      // Guardamos el ID del usuario en la memoria local al hacer login
+      await SharedPreferenceHelper().saveUserId(userCredential.user!.uid);
+      
       if (!mounted) return;
       
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const Home()));
+      // AQUÍ ESTÁ EL ARREGLO: Te enviamos a BottomNav en lugar de Home
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const BottomNav()));
       
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
           backgroundColor: Colors.green,
@@ -36,7 +40,6 @@ class _LogInState extends State<LogIn> {
           )));
     } on FirebaseAuthException catch (e) {
       
-      // Verificamos de nuevo en caso de que caiga en un error
       if (!mounted) return;
 
       if (e.code == 'user-not-found') {
@@ -129,7 +132,7 @@ class _LogInState extends State<LogIn> {
                 child: Container(
                   padding: const EdgeInsets.all(15.0),
                   decoration: BoxDecoration(
-                    color: Colors.blue,
+                    color: const Color(0Xffff5722),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Center(
@@ -146,7 +149,7 @@ class _LogInState extends State<LogIn> {
               const SizedBox(height: 20.0),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUp()));
+                  Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const SignUp()));
                 },
                 child: const Text(
                   "Don't have an account? Sign Up",
@@ -154,7 +157,7 @@ class _LogInState extends State<LogIn> {
                   style: TextStyle(
                       fontSize: 16.0,
                       fontWeight: FontWeight.w500,
-                      color: Colors.blue),
+                      color:Color(0Xffff5722)),
                 ),
               )
             ],
