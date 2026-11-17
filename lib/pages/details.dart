@@ -1,53 +1,83 @@
 import 'package:flutter/material.dart';
 import '../widgets/widget_support.dart';
+import '../service/database.dart'; 
+import '../service/shared_pref.dart';
 
 class Details extends StatefulWidget {
-  const Details({super.key});
+  // 1. Declaramos las variables que recibirá de la pantalla Home
+  final String image;
+  final String name;
+  final String detail;
+  final String price;
+
+  const Details({
+    super.key, 
+    required this.image, 
+    required this.name, 
+    required this.detail, 
+    required this.price
+  });
 
   @override
   State<Details> createState() => _DetailsState();
 }
 
 class _DetailsState extends State<Details> {
-
   int cantidad = 1;
+  String? id;
+
+  // 2. Obtenemos el ID del usuario que inició sesión
+  getthesharedpref() async {
+    id = await SharedPreferenceHelper().getUserId();
+    setState(() {});
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getthesharedpref();
+  }
 
   @override
   Widget build(BuildContext context) {
+    // 3. Calculamos el precio total dinámicamente
+    int precioBase = int.parse(widget.price);
+    int total = precioBase * cantidad;
+
     return Scaffold(
       body: Container(
         margin: const EdgeInsets.only(top: 50.0, left: 20.0, right: 20.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Botón de regresar
             GestureDetector(
               onTap: () => Navigator.pop(context),
               child: const Icon(Icons.arrow_back_ios_new_outlined, color: Colors.black),
             ),
             
-            // Imagen del platillo (Ajustada al tamaño de pantalla)
-            Image.asset(
-              "images/salad2.png", // o .jpg según lo que guardaste
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height / 3, // Ocupa 1/3 de la pantalla
-              fit: BoxFit.fill,
+            // 4. Cambiamos Image.asset por Image.network usando la foto de ImgBB
+            ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                widget.image, 
+                width: MediaQuery.of(context).size.width,
+                height: MediaQuery.of(context).size.height / 3,
+                fit: BoxFit.cover,
+              ),
             ),
             const SizedBox(height: 15.0),
             
-            // Título y Controles de Cantidad
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text("Veggie Taco Hash", style: AppWidget.semiBoldTextFieldStyle(), maxLines: 2),
+                  // 5. Usamos el nombre real de la comida
+                  child: Text(widget.name, style: AppWidget.semiBoldTextFieldStyle(), maxLines: 2),
                 ),
-                // Controles de Menos y Más
                 Row(
                   children: [
                     GestureDetector(
                       onTap: () {
-                        // LÓGICA DEFENSIVA: Solo resta si es mayor a 1
                         if (cantidad > 1) {
                           setState(() => cantidad--);
                         }
@@ -62,7 +92,7 @@ class _DetailsState extends State<Details> {
                     const SizedBox(width: 15.0),
                     GestureDetector(
                       onTap: () {
-                        setState(() => cantidad++); // Aumenta sin límite
+                        setState(() => cantidad++);
                       },
                       child: Container(
                         decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(8)),
@@ -75,15 +105,14 @@ class _DetailsState extends State<Details> {
             ),
             const SizedBox(height: 20.0),
             
-            // Descripción del platillo
+            // 6. Usamos el detalle real de la comida
             Text(
-              "A delicious and healthy veggie taco hash made with fresh ingredients, perfect for a balanced meal.",
+              widget.detail,
               style: AppWidget.lightTextFieldStyle(),
               maxLines: 3,
             ),
             const SizedBox(height: 30.0),
             
-            // Tiempo de entrega
             Row(
               children: [
                 const Text("Delivery Time", style: TextStyle(color: Colors.black54, fontSize: 16)),
@@ -93,9 +122,8 @@ class _DetailsState extends State<Details> {
                 Text("30 min", style: AppWidget.semiBoldTextFieldStyle()),
               ],
             ),
-            const Spacer(), // Empuja el botón al fondo de la pantalla
+            const Spacer(),
             
-            // Botón de Precio Total y Añadir al Carrito
             Padding(
               padding: const EdgeInsets.only(bottom: 40.0),
               child: Row(
@@ -105,20 +133,41 @@ class _DetailsState extends State<Details> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text("Total Price", style: TextStyle(color: Colors.black54, fontSize: 16)),
-                      // Calculamos el precio dinámicamente multiplicando por la cantidad
-                      Text("\$${(25 * cantidad)}", style: AppWidget.headerTextFieldStyle()),
+                      // 7. Mostramos el total multiplicado
+                      Text("\$$total", style: AppWidget.headerTextFieldStyle()),
                     ],
                   ),
-                  Container(
-                    width: MediaQuery.of(context).size.width / 2,
-                    padding: const EdgeInsets.all(15),
-                    decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(10)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text("Add to cart", style: TextStyle(color: Colors.white, fontSize: 16)),
-                        Icon(Icons.shopping_cart_outlined, color: Colors.white),
-                      ],
+                  
+                  // 8. Botón funcional de Agregar al Carrito
+                  GestureDetector(
+                    onTap: () async {
+                      if (id != null) {
+                        Map<String, dynamic> addFoodToCart = {
+                          "Name": widget.name,
+                          "Quantity": cantidad.toString(),
+                          "Total": total.toString(),
+                          "Image": widget.image
+                        };
+                        
+                        await DatabaseMethods().addFoodToCart(addFoodToCart, id!);
+                        
+                        if(!mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                          backgroundColor: Colors.green,
+                          content: Text("Food Added to Cart", style: TextStyle(fontSize: 18.0))));
+                      }
+                    },
+                    child: Container(
+                      width: MediaQuery.of(context).size.width / 2,
+                      padding: const EdgeInsets.all(15),
+                      decoration: BoxDecoration(color: Colors.black, borderRadius: BorderRadius.circular(10)),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: const [
+                          Text("Add to cart", style: TextStyle(color: Colors.white, fontSize: 16)),
+                          Icon(Icons.shopping_cart_outlined, color: Colors.white),
+                        ],
+                      ),
                     ),
                   )
                 ],
